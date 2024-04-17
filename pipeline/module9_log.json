@@ -1,0 +1,114 @@
+{
+	"name": "module9_log",
+	"properties": {
+		"activities": [
+			{
+				"name": "Stored procedure1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[etl].[sp_log]",
+					"storedProcedureParameters": {
+						"activityName": {
+							"value": {
+								"value": "@pipeline().parameters.activityName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"billingDuration": {
+							"value": {
+								"value": "@pipeline().parameters.billingDuration",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"endtime": {
+							"value": {
+								"value": "@pipeline().parameters.endtime",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"metertype": {
+							"value": {
+								"value": "@pipeline().parameters.meterType",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"pipelineName": {
+							"value": {
+								"value": "@pipeline().parameters.pipelineName",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"pipelineRunID": {
+							"value": {
+								"value": "@pipeline().parameters.pipelineId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"starttime": {
+							"value": {
+								"value": "@pipeline().parameters.starttime",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"statistics": {
+							"value": {
+								"value": "@pipeline().parameters.statistics",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDbLs",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"pipelineId": {
+				"type": "string"
+			},
+			"pipelineName": {
+				"type": "string"
+			},
+			"activityName": {
+				"type": "string"
+			},
+			"billingDuration": {
+				"type": "string"
+			},
+			"meterType": {
+				"type": "string"
+			},
+			"starttime": {
+				"type": "string"
+			},
+			"endtime": {
+				"type": "string"
+			},
+			"statistics": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-03-21T11:05:08Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

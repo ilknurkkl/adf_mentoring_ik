@@ -1,0 +1,20 @@
+{
+	"name": "module10",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fail1",
+				"type": "Fail",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "fail message",
+					"errorCode": "2000"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-03-26T11:42:09Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

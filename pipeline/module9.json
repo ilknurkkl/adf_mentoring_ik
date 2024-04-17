@@ -1,0 +1,332 @@
+{
+	"name": "module9",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetSumOfObjectsToCopy",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Start Log",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT * FROM @{pipeline().parameters.MainControlTableName} ",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "MetadataDrivenCopyTask_fzx_ControlDS",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "GetSumOfObjectsToCopy",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetSumOfObjectsToCopy').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "Script1",
+							"type": "Script",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDbLs",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "truncate table f  @{item().schemaname}.@{item().tablename}",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						},
+						{
+							"name": "ExecuteMiddle",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Script1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pipeline9_mid",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"tablename": {
+										"value": "@{item().tablename}",
+										"type": "Expression"
+									},
+									"cw_columnDelimiter": {
+										"value": "@{item().columnDelimiter}",
+										"type": "Expression"
+									},
+									"cw_escapeChar": {
+										"value": "@{item().escapeChar}",
+										"type": "Expression"
+									},
+									"cw_quoteChar": {
+										"value": "@item().quoteChar",
+										"type": "Expression"
+									},
+									"cw_firstRowAsHeader": {
+										"value": "@item().firstRowAsHeader",
+										"type": "Expression"
+									},
+									"cw_fileName": {
+										"value": "@item().fileName",
+										"type": "Expression"
+									},
+									"cw_folderPath": {
+										"value": "@item().folderPath",
+										"type": "Expression"
+									},
+									"cw_fileSystem": {
+										"value": "@item().fileSystem",
+										"type": "Expression"
+									},
+									"mapping": {
+										"value": "@item().mapping",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Execute Log",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "module9_log",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"pipelineId": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"pipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"activityName": "'PipelineCompleted'",
+						"billingDuration": "0",
+						"meterType": "0",
+						"starttime": {
+							"value": "@pipeline().TriggerTime",
+							"type": "Expression"
+						},
+						"endtime": {
+							"value": "@utcnow()",
+							"type": "Expression"
+						},
+						"statistics": {
+							"value": "@activity('GetSumOfObjectsToCopy').output",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			{
+				"name": "Start Log",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "module9_log",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"pipelineId": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"pipelineName": {
+							"value": "@pipeline().Pipeline",
+							"type": "Expression"
+						},
+						"activityName": "'PipelineStarted'",
+						"billingDuration": "0",
+						"meterType": "0",
+						"starttime": {
+							"value": "@pipeline().TriggerTime",
+							"type": "Expression"
+						},
+						"endtime": "11"
+					}
+				}
+			},
+			{
+				"name": "Error",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Start Log",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[etl].[sp_error]",
+					"storedProcedureParameters": {
+						"activityName": {
+							"value": {
+								"value": "@activity('Start Log').output.name",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"datetime": {
+							"value": {
+								"value": "@utcNow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"errorCode": {
+							"value": {
+								"value": "@string(activity('Start Log').error.errorcode)",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"errorMessage": {
+							"value": {
+								"value": "@string(activity('Start Log').error.message)",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"failureType": {
+							"value": {
+								"value": "@string(activity('Start Log').error.failureType)",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"pipelineName": {
+							"value": {
+								"value": "@pipeline().Pipeline",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"pipelineRunID": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDbLs",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"MaxNumberOfObjectsReturnedFromLookupActivity": {
+				"type": "int",
+				"defaultValue": 5000
+			},
+			"MaxNumberOfConcurrentTasks": {
+				"type": "int",
+				"defaultValue": 20
+			},
+			"MainControlTableName": {
+				"type": "string",
+				"defaultValue": "etl.tControlMetadata"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-03-21T13:15:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

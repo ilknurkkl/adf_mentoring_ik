@@ -1,0 +1,86 @@
+{
+	"name": "AzureSqlMovieStatus",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDbLs",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "MovieId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MovieIdNK",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Budget",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "HomepagePath",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Title",
+				"type": "nvarchar"
+			},
+			{
+				"name": "OriginalTitle",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ReleaseDate",
+				"type": "date"
+			},
+			{
+				"name": "Revenue",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "Runtime",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "MovieStatusId",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "AvgVote",
+				"type": "decimal",
+				"precision": 3,
+				"scale": 1
+			},
+			{
+				"name": "CreatedDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "ModifiedDate",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "SrcFileName",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tMovieStatus"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

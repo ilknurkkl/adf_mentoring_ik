@@ -1,0 +1,410 @@
+{
+	"name": "pipeline9_mid",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DsMetadataDriven",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": {
+								"value": "@{pipeline().parameters.tablename}*",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems",
+						"itemName"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Metadata1').output.childItems",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "CopyData",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Source",
+									"value": "@{pipeline().parameters.cw_fileSystem}/@{pipeline().parameters.cw_folderPath}/@{item().name}"
+								},
+								{
+									"name": "Destination",
+									"value": "stg.@{pipeline().parameters.tablename}"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"additionalColumns": [
+										{
+											"name": "pipelineId",
+											"value": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											}
+										},
+										{
+											"name": "source_filename",
+											"value": "$$FILEPATH"
+										}
+									],
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": false,
+										"wildcardFolderPath": {
+											"value": "@pipeline().parameters.cw_folderPath",
+											"type": "Expression"
+										},
+										"wildcardFileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"value": "@json(string(pipeline().parameters.mapping))\n",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "MetadataDrivenCopyTask_fzx_SourceDS",
+									"type": "DatasetReference",
+									"parameters": {
+										"cw_columnDelimiter": {
+											"value": "@pipeline().parameters.cw_columnDelimiter",
+											"type": "Expression"
+										},
+										"cw_firstRowAsHeader": {
+											"value": "@pipeline().parameters.cw_firstRowAsHeader",
+											"type": "Expression"
+										},
+										"cw_fileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										},
+										"cw_folderPath": {
+											"value": "@pipeline().parameters.cw_folderPath",
+											"type": "Expression"
+										},
+										"cw_fileSystem": {
+											"value": "@pipeline().parameters.cw_fileSystem",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "MetadataDrivenCopyTask_fzx_DestinationDS",
+									"type": "DatasetReference",
+									"parameters": {
+										"tablename": {
+											"value": "@pipeline().parameters.tablename",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Log CopyActivity",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "CopyData",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "module9_log",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"pipelineId": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"pipelineName": {
+										"value": "@pipeline().Pipeline",
+										"type": "Expression"
+									},
+									"activityName": "CopyAcyivityCompleted",
+									"billingDuration": {
+										"value": "@string(json(string(activity('CopyData').output)).billingReference.billableDuration[0].duration)",
+										"type": "Expression"
+									},
+									"meterType": {
+										"value": "@string(json(string(activity('CopyData').output)).billingReference.billableDuration[0].meterType)",
+										"type": "Expression"
+									},
+									"starttime": {
+										"value": "@string(json(string(activity('CopyData').output)).executionDetails[0].start)",
+										"type": "Expression"
+									},
+									"endtime": {
+										"value": "@utcnow()",
+										"type": "Expression"
+									},
+									"statistics": {
+										"value": "@string(activity('CopyData').output)",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Error",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "CopyData",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[etl].[sp_error]",
+								"storedProcedureParameters": {
+									"activityName": {
+										"value": {
+											"value": "@activity('CopyData').output.name",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"datetime": {
+										"value": {
+											"value": "@utcNow()",
+											"type": "Expression"
+										},
+										"type": "DateTime"
+									},
+									"errorCode": {
+										"value": {
+											"value": "@string(activity('CopyData').error.errorcode)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"errorMessage": {
+										"value": {
+											"value": "@string(activity('CopyData').error.message)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"failureType": {
+										"value": {
+											"value": "@string(activity('CopyData').error.failureType)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"pipelineName": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"pipelineRunID": {
+										"value": {
+											"value": "@pipeline().RunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDbLs",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"tablename": {
+				"type": "string",
+				"defaultValue": "credits"
+			},
+			"cw_columnDelimiter": {
+				"type": "string",
+				"defaultValue": ","
+			},
+			"cw_escapeChar": {
+				"type": "string",
+				"defaultValue": "\""
+			},
+			"cw_quoteChar": {
+				"type": "string",
+				"defaultValue": "\\"
+			},
+			"cw_firstRowAsHeader": {
+				"type": "bool",
+				"defaultValue": true
+			},
+			"cw_fileName": {
+				"type": "string",
+				"defaultValue": "credits.csv"
+			},
+			"cw_folderPath": {
+				"type": "string",
+				"defaultValue": "metadata-driven"
+			},
+			"cw_fileSystem": {
+				"type": "string",
+				"defaultValue": "raw"
+			},
+			"mapping": {
+				"type": "string",
+				"defaultValue": {
+					"type": "TabularTranslator",
+					"mappings": [
+						{
+							"source": {
+								"type": "String",
+								"name": "cast"
+							},
+							"sink": {
+								"name": "cast",
+								"type": "String",
+								"physicalType": "nvarchar"
+							}
+						},
+						{
+							"source": {
+								"type": "String",
+								"name": "crew"
+							},
+							"sink": {
+								"name": "crew",
+								"type": "String",
+								"physicalType": "nvarchar"
+							}
+						},
+						{
+							"source": {
+								"type": "String",
+								"name": "id"
+							},
+							"sink": {
+								"name": "id",
+								"type": "String",
+								"physicalType": "nvarchar"
+							}
+						},
+						{
+							"source": {
+								"name": "pipelineId",
+								"type": "String"
+							},
+							"sink": {
+								"name": "pipelineId",
+								"type": "String",
+								"physicalType": "nvarchar"
+							}
+						},
+						{
+							"source": {
+								"name": "source_filename",
+								"type": "String"
+							},
+							"sink": {
+								"name": "source_filename",
+								"type": "String",
+								"physicalType": "nvarchar"
+							}
+						}
+					],
+					"typeConversion": true,
+					"typeConversionSettings": {
+						"allowDataTruncation": true,
+						"treatBooleanAsNumber": false
+					}
+				}
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-03-21T13:15:20Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,19 @@
+{
+	"name": "DsBlobOnline",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobOnlineLs",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"container": "online"
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
