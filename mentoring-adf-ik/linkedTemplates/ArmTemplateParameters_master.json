@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "mentoring-adf-ik"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"AzureBlobOnlineLs_properties_typeProperties_sasUri_secretName": {
+			"value": "blob-online-cs"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://azurementoringdatalakeik.dfs.core.windows.net/"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://mentoring-key-vault-ik.vault.azure.net/"
+		},
+		"AzureSqlDatamartLs_properties_typeProperties_connectionString_secretName": {
+			"value": "datamart-cs"
+		},
+		"AzureSqlDbLs_properties_typeProperties_connectionString_secretName": {
+			"value": "azuresql-cs"
+		},
+		"CinemaTicketsLs_properties_typeProperties_connectionString_secretName": {
+			"value": "cinematickets-cs"
+		},
+		"azurementoringstorageik_sasUri": {
+			"value": ""
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
