@@ -1,0 +1,17 @@
+{
+	"name": "DsTickets",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "CinemaTicketsLs",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Tickets"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

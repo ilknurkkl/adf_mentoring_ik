@@ -1,0 +1,209 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlMovies",
+						"type": "DatasetReference"
+					},
+					"name": "Movies"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlMovieStatus",
+						"type": "DatasetReference"
+					},
+					"name": "MovieStatus"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlOnlineService",
+						"type": "DatasetReference"
+					},
+					"name": "OnlineService"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlDimOnlineService",
+						"type": "DatasetReference"
+					},
+					"name": "StaginDimOnlineService"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "AzureSqlDimMovie",
+						"type": "DatasetReference"
+					},
+					"name": "DimMovies"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatamartLs",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DimOnlineService"
+				}
+			],
+			"transformations": [
+				{
+					"name": "MovieStatusJoin"
+				},
+				{
+					"name": "CreatedDate"
+				},
+				{
+					"name": "ModifiedDate"
+				},
+				{
+					"name": "ModifiedDate2"
+				},
+				{
+					"name": "CreatedDate2"
+				},
+				{
+					"name": "exists1"
+				},
+				{
+					"name": "FingerPrintSource"
+				},
+				{
+					"name": "FingerPrintSink"
+				},
+				{
+					"name": "AlterRow1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          MovieId as integer,",
+				"          MovieIdNK as integer,",
+				"          Budget as integer,",
+				"          HomepagePath as string,",
+				"          Title as string,",
+				"          OriginalTitle as string,",
+				"          ReleaseDate as date,",
+				"          Revenue as long,",
+				"          Runtime as integer,",
+				"          MovieStatusId as integer,",
+				"          AvgVote as decimal(3,1),",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp,",
+				"          SrcFileName as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> Movies",
+				"source(output(",
+				"          MovieStatusId as integer,",
+				"          MovieStatusName as string,",
+				"          CreatedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> MovieStatus",
+				"source(output(",
+				"          ServiceId as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> OnlineService",
+				"source(output(",
+				"          ServiceKey as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> StaginDimOnlineService",
+				"Movies, MovieStatus join(Movies@MovieStatusId == MovieStatus@MovieStatusId,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'both')~> MovieStatusJoin",
+				"MovieStatusJoin derive(CreatedDate = currentDate()) ~> CreatedDate",
+				"CreatedDate derive(ModifiedDate = currentDate()) ~> ModifiedDate",
+				"CreatedDate2 derive(ModifiedDate = currentTimestamp()) ~> ModifiedDate2",
+				"exists1 derive(CreatedDate = currentTimestamp()) ~> CreatedDate2",
+				"FingerPrintSource, FingerPrintSink exists(FingerPrintSource@fp == FingerPrintSink@fp,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> exists1",
+				"OnlineService derive(fp = sha2(256,ServiceCode,ServiceName)) ~> FingerPrintSource",
+				"StaginDimOnlineService derive(fp = sha2(256,ServiceCode,ServiceName)) ~> FingerPrintSink",
+				"ModifiedDate2 alterRow(upsertIf(true())) ~> AlterRow1",
+				"ModifiedDate sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          MovieKey as integer,",
+				"          MovieIdNK as integer,",
+				"          Title as string,",
+				"          ReleaseDate as date,",
+				"          Runtime as integer,",
+				"          MovieStatus as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          MovieIdNK,",
+				"          Title,",
+				"          ReleaseDate,",
+				"          Runtime,",
+				"          CreatedDate,",
+				"          ModifiedDate,",
+				"          MovieStatus = MovieStatusName",
+				"     )) ~> DimMovies",
+				"AlterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ServiceKey as integer,",
+				"          ServiceCode as string,",
+				"          ServiceName as string,",
+				"          CreatedDate as timestamp,",
+				"          ModifiedDate as timestamp",
+				"     ),",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'DimOnlineService',",
+				"     insertable: true,",
+				"     updateable: true,",
+				"     deletable: true,",
+				"     upsertable: true,",
+				"     keys:['ServiceCode'],",
+				"     skipKeyWrites:true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CreatedDate,",
+				"          ModifiedDate,",
+				"          ServiceCode,",
+				"          ServiceName",
+				"     )) ~> DimOnlineService"
+			]
+		}
+	}
+}

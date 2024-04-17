@@ -1,0 +1,133 @@
+{
+	"name": "MetadataDrivenCopyTask_fzx_DestinationDS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDbLs",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"tablename": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "MetadataDrivenCopyTask_fzx_20240220"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "adult",
+				"type": "nvarchar"
+			},
+			{
+				"name": "belongs_to_collection",
+				"type": "nvarchar"
+			},
+			{
+				"name": "budget",
+				"type": "nvarchar"
+			},
+			{
+				"name": "genres",
+				"type": "nvarchar"
+			},
+			{
+				"name": "homepage",
+				"type": "nvarchar"
+			},
+			{
+				"name": "id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "imdb_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "original_language",
+				"type": "nvarchar"
+			},
+			{
+				"name": "original_title",
+				"type": "nvarchar"
+			},
+			{
+				"name": "overview",
+				"type": "nvarchar"
+			},
+			{
+				"name": "popularity",
+				"type": "nvarchar"
+			},
+			{
+				"name": "poster_path",
+				"type": "nvarchar"
+			},
+			{
+				"name": "production_companies",
+				"type": "nvarchar"
+			},
+			{
+				"name": "production_countries",
+				"type": "nvarchar"
+			},
+			{
+				"name": "release_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "revenue",
+				"type": "nvarchar"
+			},
+			{
+				"name": "runtime",
+				"type": "nvarchar"
+			},
+			{
+				"name": "spoken_languages",
+				"type": "nvarchar"
+			},
+			{
+				"name": "status",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tagline",
+				"type": "nvarchar"
+			},
+			{
+				"name": "title",
+				"type": "nvarchar"
+			},
+			{
+				"name": "video",
+				"type": "nvarchar"
+			},
+			{
+				"name": "vote_average",
+				"type": "nvarchar"
+			},
+			{
+				"name": "vote_count",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pipelineId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "source_filename",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "stg",
+			"table": {
+				"value": "@dataset().tablename",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

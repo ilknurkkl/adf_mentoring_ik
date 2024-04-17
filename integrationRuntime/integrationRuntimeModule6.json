@@ -1,0 +1,6 @@
+{
+	"name": "integrationRuntimeModule6",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}

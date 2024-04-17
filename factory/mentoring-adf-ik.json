@@ -1,0 +1,15 @@
+{
+	"name": "mentoring-adf-ik",
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned,UserAssigned",
+		"principalId": "23983849-c28b-4ea1-94b2-3afbb0756e08",
+		"tenantId": "b41b72d0-4e9f-4c26-8a69-f949f367c91d",
+		"userAssignedIdentities": {
+			"/subscriptions/bb9f8aa3-d551-4aef-a753-f5cda0e36f5b/resourcegroups/azure-mentoring-ik/providers/Microsoft.ManagedIdentity/userAssignedIdentities/managedID-ik": {
+				"clientId": "fe96171e-0b0b-422b-9aec-1672ab1a6dab",
+				"principalId": "08c0deed-c351-4326-b0fb-740bbb62ee21"
+			}
+		}
+	}
+}

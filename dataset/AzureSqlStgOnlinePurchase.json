@@ -1,0 +1,54 @@
+{
+	"name": "AzureSqlStgOnlinePurchase",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDbLs",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "online_service_name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "online_service_code",
+				"type": "nvarchar"
+			},
+			{
+				"name": "movie_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "user_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "price",
+				"type": "nvarchar"
+			},
+			{
+				"name": "transaction_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "transaction_date",
+				"type": "nvarchar"
+			},
+			{
+				"name": "source_filename",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pipelineId",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "stg",
+			"table": "online_purchase"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
